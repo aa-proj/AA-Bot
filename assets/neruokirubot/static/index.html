@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+</head>
+<body style="padding: 0; margin: 0; background: transparent">
+<img src="ogp-base2.png">
+<div id="app">
+  <div id="gradation">
+    <img id="profile" :src="icon">
+  </div>
+  <div id="name">{{name}}</div>
+  <div id="time">{{time}}</div>
+  <div id="date">{{date}}</div>
+  <div id="history">{{history}}</div>
+  <div id="time-radius" :style="{'--rad':`${rad}deg`, '--angle':`${angle}deg` }"></div>
+  <div id="aa">{{point}}ああP</div>
+</div>
+<style>
+    body {
+        font-family: 'Noto Sans JP', sans-serif;
+        overflow: hidden;
+    }
+
+    #profile {
+        border-radius: 18px;
+        width: 160px;
+        height: 160px;
+    }
+
+    #gradation {
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    #gradation::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 160px;
+        height: 160px;
+        background: linear-gradient(90deg, transparent, #000);
+    }
+
+    #name {
+        position: fixed;
+        font-family: "Noto Sans JP", sans-serif;
+        top: 5px;
+        left: 160px;
+        font-size: 40px;
+        color: #E6E6E6;
+        text-shadow: 1px 1px 0 #717171,1px -1px 0 #717171,-1px 1px 0 #717171,-1px -1px 0 #717171;
+    }
+
+    #time {
+        position: fixed;
+        font-family: "Noto Sans JP", sans-serif;
+        display: block;
+        width: 130px;
+        text-align: right;
+        top: 80px;
+        left: 160px;
+        font-size: 80px;
+        line-height: 80px;
+        color: #6FEFFF;
+    }
+
+    #date {
+        position: fixed;
+        font-family: "Noto Sans JP", sans-serif;
+        top: 53px;
+        left: 160px;
+        color: #E6E6E6;
+        font-size: 20px;
+        text-shadow: 1px 1px 0 #717171,1px -1px 0 #717171,-1px 1px 0 #717171,-1px -1px 0 #717171;
+    }
+
+    #history {
+        position: fixed;
+        font-family: "Noto Sans JP", sans-serif;
+        top: 137px;
+        left: 400px;
+        color: #A4A4A4;
+        font-size: 13px;
+    }
+
+    #time-radius {
+        --rad: 0deg;
+        --angle: 0deg;
+
+        position: fixed;
+        font-family: "Noto Sans JP", sans-serif;
+        width: 80px;
+        height: 80px;
+        top: calc(70px - 40px);
+        left: calc(495px - 40px);
+        border-radius: 50%;
+        background: conic-gradient(#37B3FF var(--angle), #393939 var(--angle) 360deg);
+        transform: rotate(var(--rad));
+    }
+
+    #aa {
+        position: fixed;
+        font-family: "Noto Sans JP", sans-serif;
+        top: 103px;
+        left: 313px;
+        color: #eff861;
+        font-size: 16px;
+    }
+</style>
+<script>
+  const app = new Vue({
+    el: "#app",
+    data: {
+      icon: "https://avatars.githubusercontent.com/u/91118218?s=400&u=5bdb41a9416cb2b3458f4338c1f4b773f52af6cb&v=4",
+      name: "kokoa",
+      time: "8.6",
+      date: "2022/10/29",
+      history: "累計 1280.4時間 平均 4.8時間",
+      point: 12,
+      start: 0,
+      end: 0,
+      rad: 0,
+      angle: 0
+    },
+    mounted() {
+      console.log("mounted");
+      const searchParams = new URLSearchParams(window.location.search);
+      const d = JSON.parse(searchParams.get("data"));
+      console.log(d);
+
+      this.icon = d.icon;
+      this.name = d.name;
+      this.time = d.time;
+      this.date = new Date(d.date).toLocaleDateString("ja-JP");
+      this.history = `累計 ${d.sum}時間 平均 ${d.average}時間`;
+      this.point = d.point;
+      this.start = d.start;
+      this.end = d.end;
+
+      const startDate = new Date(this.start);
+      this.rad = startDate.getHours() * 15 + startDate.getMinutes() * 0.25;
+      this.angle = Math.floor((Number(d.end) - Number(d.start)) / (1000 * 60 * 4));
+      console.log(this.rad, this.angle);
+    }
+  });
+</script>
+</body>
+</html>

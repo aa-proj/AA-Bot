@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+</head>
+<body>
+<div id="root">
+  <img src="aaicon.png" id="aaicon">
+  <p id="title">あほあほ睡眠風呂統計</p>
+  <div class="container">
+    <div class="bg">
+      <div class="bg-line"></div>
+    </div>
+    <div>
+      <img class="user-icon" src="https://cdn.discordapp.com/avatars/170731615524356097/4d685537cdba768b2a844735fa391ec9.webp?size=128">
+    </div>
+  </div>
+</div>
+<style>
+    body, p {
+        margin: 0;
+        padding: 0;
+    }
+
+    #root {
+        width: 1600px;
+        min-height: 800px;
+        background-color: black;
+        border-radius: 25px;
+    }
+
+    #aaicon {
+        position: absolute;
+        width: 100px;
+        left: 10px;
+    }
+
+    #title {
+        font-size: 60px;
+        color: #fff;
+        position: relative;
+        line-height: 60px;
+        left: 125px;
+        top: 20px
+    }
+
+    .container {
+        width: 100%;
+        height: 100px;
+        margin-top: 50px;
+        position: absolute;
+    }
+
+    .user-icon {
+        border-radius: 50%;
+    }
+
+    .bg {
+        position: relative;
+        top:0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+</style>
+<script>
+  const app = new Vue({
+    el: "#root"
+  });
+</script>
+</body>
+</html>
