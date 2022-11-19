@@ -91,7 +91,6 @@ export class NeruOkiruBot extends AppBase {
     const messageUserId = interaction.user.id;
     const command = interaction.customId;
     if (messageUser.bot) return;
-    await interaction.reply({content: "OK", ephemeral: true});
 
     const userRepository = this.connection?.getRepository(User);
     const sleepRepository = this.connection?.getRepository(Sleep);
@@ -158,6 +157,7 @@ export class NeruOkiruBot extends AppBase {
           await general.send(
             this.getNameFromID(messageUserId) + "はねました。ぽやしみ"
           );
+          await interaction.reply({content: "OK", ephemeral: true});
           break;
         case "Okiru":
           g?.members.cache.get(messageUserId)?.roles.remove(neruRole);
@@ -202,6 +202,7 @@ export class NeruOkiruBot extends AppBase {
               {nowSleeping: false}
             );
           }
+          await interaction.reply({content: "OK", ephemeral: true});
           break;
       }
     }
