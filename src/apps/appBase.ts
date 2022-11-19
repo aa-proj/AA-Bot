@@ -1,4 +1,4 @@
-import {CacheType, Client, Interaction, Message} from "discord.js";
+import {CacheType, Client, Interaction, Message, VoiceState} from "discord.js";
 
 export class AppBase {
   appName: string = "unnamed"
@@ -17,6 +17,10 @@ export class AppBase {
   }
 
   onInteractionCreate(interaction: Interaction<CacheType>) {
+    return
+  }
+
+  onVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
     return
   }
 
