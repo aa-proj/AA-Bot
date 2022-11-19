@@ -110,10 +110,10 @@ export class FuroHaittakaBot extends AppBase {
               + `${aap}ああP付与されました`
             );
           }
+          await interaction.reply({content: "OK", ephemeral: true});
           break;
       }
     }
-    await interaction.reply({content: "OK", ephemeral: true});
   }
 
   async connectDB() {
