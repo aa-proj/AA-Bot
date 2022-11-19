@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+  node:
+    build: .
+    init: true
+    restart: always
+    environment:
+      DISCORD_TOKEN: "Token"
+      TZ: Asia/Tokyo
+    volumes:
+      - ./assets:/app/assets
+    ports:
+      - "127.0.0.1:3000:3000"

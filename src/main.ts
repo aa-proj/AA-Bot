@@ -1,5 +1,7 @@
 import {Client, IntentsBitField} from "discord.js";
 import {NeruOkiruBot} from "./apps/neruokirubot/src";
+import {AppBase} from "./apps/appBase";
+import {FuroHaittakaBot} from "./apps/furohaittakabot/src/main";
 
 const client = new Client(
   {
@@ -11,23 +13,28 @@ const client = new Client(
       ]
   });
 
-const neruOkiruBot = new NeruOkiruBot(client)
+const apps: AppBase[] = []
+apps.push(new NeruOkiruBot(client))
+apps.push(new FuroHaittakaBot(client))
 
 
 client.on("ready", async (args) => {
-  console.log("Discord Bot Ready");
-  await neruOkiruBot.onBotReady(args)
+  for (const app of apps) {
+    await app.onBotReady(args)
+  }
 });
 
 client.on("messageCreate", async (msg) => {
-  console.log("messageCreate")
-  await neruOkiruBot.onMessageCreate(msg)
+  for (const app of apps) {
+    await app.onMessageCreate(msg)
+  }
 });
 
 
 client.on("interactionCreate", async (interaction) => {
-  console.log("interactionCreate")
-  await neruOkiruBot.onInteractionCreate(interaction)
+  for (const app of apps) {
+    await app.onInteractionCreate(interaction)
+  }
 })
 
 client.login(process.env.DISCORD_TOKEN)

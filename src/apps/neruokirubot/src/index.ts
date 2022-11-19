@@ -19,18 +19,6 @@ const options: ConnectionOptions = {
   synchronize: false
 };
 
-// TypeORMのコネクション 使う前にnullチェックが必要
-let connection: Connection | null = null;
-
-async function connectDB() {
-  connection = await createConnection(options);
-  const userRepository = connection.getRepository(User);
-  console.log(await userRepository.count());
-  await connection.query("PRAGMA foreign_keys=OFF");
-  await connection.synchronize();
-  await connection.query("PRAGMA foreign_keys=ON");
-}
-
 
 // いろんな定数 TODO コンフィグ化
 // const neru = "<:ne:803311475502350398>";
@@ -48,18 +36,21 @@ const guildID = "606109479003750440";
 
 export class NeruOkiruBot extends AppBase {
   OGP: OGPManager
+  // TypeORMのコネクション 使う前にnullチェックが必要
+  connection: Connection | null = null;
 
   constructor(client: Client) {
     super(client);
+    this.appName = "NeruOkiruBot"
+
     // コネクションする
-    connectDB();
+    this.connectDB();
     this.OGP = new OGPManager();
     this.OGP.init();
   }
 
   override async onBotReady(arg: Client<true>) {
-    console.log("BotReady")
-
+    this.log("OnBotReady")
   }
 
   override async onMessageCreate(msg: Message) {
@@ -102,8 +93,8 @@ export class NeruOkiruBot extends AppBase {
     if (messageUser.bot) return;
     await interaction.reply({content: "OK", ephemeral: true});
 
-    const userRepository = connection?.getRepository(User);
-    const sleepRepository = connection?.getRepository(Sleep);
+    const userRepository = this.connection?.getRepository(User);
+    const sleepRepository = this.connection?.getRepository(Sleep);
     const user = await userRepository?.findOne({discordId: interaction.user.id});
 
     if (!user) {
@@ -260,6 +251,15 @@ export class NeruOkiruBot extends AppBase {
     } else {
       return 4;
     }
+  }
+
+  async connectDB() {
+    this.connection = await createConnection(options);
+    const userRepository = this.connection.getRepository(User);
+    this.log(await userRepository.count());
+    await this.connection.query("PRAGMA foreign_keys=OFF");
+    await this.connection.synchronize();
+    await this.connection.query("PRAGMA foreign_keys=ON");
   }
 
 }
