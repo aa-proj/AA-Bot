@@ -140,7 +140,7 @@ export class FuroHaittakaBot extends AppBase {
     await channel.send({content: "お風呂に入ったらリアクションしてください", components: [action]});
   }
 
-  async getNameFromID(id: string) {
+  getNameFromID(id: string) {
     let g = this.client.guilds.cache.get(guildID);
     let nickName = g?.members.cache.get(id)?.nickname?.replace("@", "＠");
     if (!nickName) nickName = g?.members.cache.get(id)?.displayName;
