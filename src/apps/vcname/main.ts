@@ -43,7 +43,7 @@ export class VCName extends AppBase {
   }
 
   override async onVoiceStateUpdate(oldState: VoiceState, newState: VoiceState) {
-    if(newState.channel === null && oldState.channel !== null || oldState.channel?.members.size === 0) {
+    if((newState.channel === null && oldState.channel !== null) || oldState.channel?.members.size === 0) {
       if(!this.voiceChannelMap.has(oldState.channel.id)) return
       try {
         const beforeName = this.voiceChannelMap.get(oldState.channel.id)
