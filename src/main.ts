@@ -41,7 +41,8 @@ const commands = [
         type: 3
       }
     ]
-  }];
+  }
+];
 
 client.on("ready", async (args) => {
 

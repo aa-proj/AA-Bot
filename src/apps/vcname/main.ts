@@ -35,10 +35,12 @@ export class VCName extends AppBase {
         this.voiceChannelMap.set(voiceChannel.id, voiceChannel.name)
       }
 
+      await interaction.deferReply()
       await voiceChannel.setName(name)
       await interaction.reply({content: "OK", ephemeral: true})
     } catch (e) {
       await interaction.reply("エラーが発生しました(多分変えすぎ)")
+      console.error(e)
     }
   }
 
