@@ -38,7 +38,7 @@ client.on("ready", async (args) => {
 
     await rest.put(
       Routes.applicationGuildCommands(args.user.id, SERVER_ID),
-      {body: []},
+      {body: commands},
     );
 
     console.log('Successfully reloaded application (/) commands.');
