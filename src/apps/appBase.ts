@@ -1,7 +1,14 @@
 import {CacheType, Client, Interaction, Message, VoiceState} from "discord.js";
 
+export type CommandType = {
+  name: string
+  description: string
+  options: Array<any>
+}
+
 export class AppBase {
   appName: string = "unnamed"
+  commands: CommandType[] = []
   client: Client
 
   constructor(client: Client) {

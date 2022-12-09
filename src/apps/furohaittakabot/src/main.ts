@@ -30,13 +30,38 @@ const options: ConnectionOptions = {
 };
 
 
-
 export class FuroHaittakaBot extends AppBase {
   connection: Connection | null = null;
 
   constructor(client: Client) {
     super(client);
     this.appName = "FuroHaittakaBot"
+    this.commands = [
+      {
+        name: 'huro',
+        description: '風呂の状況を知ります',
+        options: [
+          {
+            name: "user",
+            required: false,
+            description: "ユーザ",
+            type: 6
+          }
+        ]
+      },
+      {
+        name: 'furo',
+        description: '風呂の状況を知ります',
+        options: [
+          {
+            name: "user",
+            required: false,
+            description: "ユーザ",
+            type: 6
+          }
+        ]
+      },
+    ]
 
     this.connectDB()
   }
@@ -61,57 +86,76 @@ export class FuroHaittakaBot extends AppBase {
   }
 
   override async onInteractionCreate(interaction: Interaction<CacheType>) {
-    if (!interaction.isButton() || !interaction.guildId) {
+    if (!interaction.guildId) {
       return;
     }
-    const g = this.client.guilds.cache.get(interaction.guildId);
-    const general: TextChannel = <TextChannel>await g?.channels.fetch(generalChannel);
-    const messageUser = interaction.user;
-    const messageUserId = interaction.user.id;
-    const command = interaction.customId;
-    if (messageUser.bot) return;
+    if (interaction.isButton()) {
+      const g = this.client.guilds.cache.get(interaction.guildId);
+      const general: TextChannel = <TextChannel>await g?.channels.fetch(generalChannel);
+      const messageUser = interaction.user;
+      const messageUserId = interaction.user.id;
+      const command = interaction.customId;
+      if (messageUser.bot) return;
 
-    const userRepository = this.connection?.getRepository(User);
-    const furoRepository = this.connection?.getRepository(Furo);
-    const user = await userRepository?.findOne({discordId: messageUserId});
-    const furoUser = await furoRepository?.findOne({where: {user: user}, order: {time: "DESC"}});
-    const furoTime = furoUser?.time
+      const userRepository = this.connection?.getRepository(User);
+      const furoRepository = this.connection?.getRepository(Furo);
+      const user = await userRepository?.findOne({discordId: messageUserId});
+      const furoUser = await furoRepository?.findOne({where: {user: user}, order: {time: "DESC"}});
+      const furoTime = furoUser?.time
 
-    if (!user) {
-      // Userが未登録だった時
-      const newUser = userRepository?.create({
-        discordId: messageUserId,
-      });
-      await userRepository?.save(<User>newUser);
-    }
-    {
-      switch (command) {
-        case "Furo":
-          const furoTransaction = furoRepository?.create({
-            time: new Date(),
-            user: user,
-          });
-          furoRepository?.save(<Furo>furoTransaction);
-          if (!furoTime) {
-            await general.send(
-              this.getNameFromID(messageUserId) +
-              "は初めてお風呂に入りました"
-            );
-          } else {
-            const aap = this.calcAAPoint((new Date().getTime()) - (new Date(furoTime).getTime()))
-            if (aap !== 0) {
-              await giveAAPoint(messageUserId, aap)
+      if (!user) {
+        // Userが未登録だった時
+        const newUser = userRepository?.create({
+          discordId: messageUserId,
+        });
+        await userRepository?.save(<User>newUser);
+      }
+      {
+        switch (command) {
+          case "Furo":
+            const furoTransaction = furoRepository?.create({
+              time: new Date(),
+              user: user,
+            });
+            furoRepository?.save(<Furo>furoTransaction);
+            if (!furoTime) {
+              await general.send(
+                this.getNameFromID(messageUserId) +
+                "は初めてお風呂に入りました"
+              );
+            } else {
+              const aap = this.calcAAPoint((new Date().getTime()) - (new Date(furoTime).getTime()))
+              if (aap !== 0) {
+                await giveAAPoint(messageUserId, aap)
+              }
+              await general.send(
+                this.getNameFromID(messageUserId) +
+                "は" +
+                getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
+                + "ぶりにお風呂に入りました\n"
+                + `${aap}ああP付与されました`
+              );
             }
-            await general.send(
-              this.getNameFromID(messageUserId) +
-              "は" +
-              getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
-              + "ぶりにお風呂に入りました\n"
-              + `${aap}ああP付与されました`
-            );
-          }
-          await interaction.reply({content: "OK", ephemeral: true});
-          break;
+            await interaction.reply({content: "OK", ephemeral: true});
+            break;
+        }
+      }
+    }
+    if (interaction.isCommand()) {
+      if (interaction.commandName === 'huro' || interaction.commandName === "furo") {
+        const userRepository = this.connection?.getRepository(User);
+        const furoRepository = this.connection?.getRepository(Furo);
+
+        const userId = interaction.options.get("user")?.user?.id || interaction.user.id
+        const user = await userRepository?.findOne({discordId: userId});
+        const furoUser = await furoRepository?.findOne({where: {user: user}, order: {time: "DESC"}});
+        const furoTime = furoUser?.time
+        if (!furoTime) {
+          await interaction.reply("生まれてから風呂入ってません")
+          return
+        }
+        await interaction.reply(this.getNameFromID(userId) + "は" + getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime())) + "風呂に入っていません")
+        return
       }
     }
   }
