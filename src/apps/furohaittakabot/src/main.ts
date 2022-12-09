@@ -154,7 +154,11 @@ export class FuroHaittakaBot extends AppBase {
           await interaction.reply("生まれてから風呂入ってません")
           return
         }
-        await interaction.reply(this.getNameFromID(userId) + "は" + getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime())) + "風呂に入っていません")
+        await interaction.reply(
+          this.getNameFromID(userId) + "は" +
+          getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
+          + "風呂に入っていません\n ああPが貰えなくなるまで残り" + getTimeFromMills(((new Date(furoTime).getTime() + 35 * 60 * 60 * 1000) - new Date().getTime()))
+        )
         return
       }
     }
