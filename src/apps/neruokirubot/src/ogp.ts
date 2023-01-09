@@ -16,10 +16,9 @@ export type OGPType = {
 }
 
 export class OGPManager {
-  // @ts-ignore
   app: Express
 
-  public init() {
+  constructor() {
     this.app = express()
     this.app.use("/internal", express.static('./assets/neruokirubot/static'));
     this.app.use("/image", express.static('./assets/neruokirubot/img'));

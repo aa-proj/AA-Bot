@@ -70,6 +70,22 @@ export class FuroHaittakaBot extends AppBase {
       res.send("ok")
     })
 
+    this.apiRouter.get("/user/:id", async (req, res) => {
+      const data = await this.getUserFuroData(req.params.id)
+      res.json(data)
+    })
+
+    this.apiRouter.post("/user/:id/furo", async (req, res) => {
+      const result = await this.doFuro(req.params.id)
+      if (result.state === Furo_Result.SUCCESS) {
+        res.json({success: true, firstTime: false, point: result.point})
+      } else if (result.state === Furo_Result.SUCCESS_FIRST_TIME) {
+        res.json({success: true, firstTime: true})
+      } else {
+        res.status(500).json({success: false})
+      }
+    })
+
     this.connectDB()
   }
 
@@ -97,55 +113,16 @@ export class FuroHaittakaBot extends AppBase {
       return;
     }
     if (interaction.isButton()) {
-      const g = this.client.guilds.cache.get(interaction.guildId);
-      const general: TextChannel = <TextChannel>await g?.channels.fetch(generalChannel);
       const messageUser = interaction.user;
       const messageUserId = interaction.user.id;
       const command = interaction.customId;
       if (messageUser.bot) return;
 
-      const userRepository = this.connection?.getRepository(User);
-      const furoRepository = this.connection?.getRepository(Furo);
-      const user = await userRepository?.findOne({discordId: messageUserId});
-      const furoUser = await furoRepository?.findOne({where: {user: user}, order: {time: "DESC"}});
-      const furoTime = furoUser?.time
-
-      if (!user) {
-        // Userが未登録だった時
-        const newUser = userRepository?.create({
-          discordId: messageUserId,
-        });
-        await userRepository?.save(<User>newUser);
-      }
-      {
-        switch (command) {
-          case "Furo":
-            const furoTransaction = furoRepository?.create({
-              time: new Date(),
-              user: user,
-            });
-            furoRepository?.save(<Furo>furoTransaction);
-            if (!furoTime) {
-              await general.send(
-                this.getNameFromID(messageUserId) +
-                "は初めてお風呂に入りました"
-              );
-            } else {
-              const aap = this.calcAAPoint((new Date().getTime()) - (new Date(furoTime).getTime()))
-              if (aap !== 0) {
-                await giveAAPoint(messageUserId, aap)
-              }
-              await general.send(
-                this.getNameFromID(messageUserId) +
-                "は" +
-                getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
-                + "ぶりにお風呂に入りました\n"
-                + `${aap}ああP付与されました`
-              );
-            }
-            await interaction.reply({content: "OK", ephemeral: true});
-            break;
-        }
+      switch (command) {
+        case "Furo":
+          await this.doFuro(messageUserId)
+          await interaction.reply({content: "OK", ephemeral: true});
+          break;
       }
     }
     if (interaction.isCommand()) {
@@ -170,6 +147,67 @@ export class FuroHaittakaBot extends AppBase {
       }
     }
   }
+
+  async getUserFuroData(userId: string): Promise<Furo[]> {
+    const userRepository = this.connection?.getRepository(User);
+    const furoRepository = this.connection?.getRepository(Furo);
+    const user = await userRepository?.findOne({discordId: userId});
+    if (!user) {
+      return []
+    }
+    const furoData = await furoRepository?.find({where: {user: user}, order: {time: "DESC"}});
+    return furoData || []
+  }
+
+
+  async doFuro(userId: string): Promise<{ state: Furo_Result, point?: number, time?: number }> {
+    const userRepository = this.connection?.getRepository(User);
+    const furoRepository = this.connection?.getRepository(Furo);
+    const g = await this.client.guilds.fetch(guildID);
+    const general: TextChannel = <TextChannel>await g.channels.fetch(generalChannel);
+    let user = await userRepository?.findOne({discordId: userId});
+    if (!user) {
+      const newUser = userRepository?.create({
+        discordId: userId,
+      });
+      await userRepository?.save(<User>newUser);
+      user = await userRepository?.findOne({discordId: userId});
+    }
+
+
+    const furoUser = await furoRepository?.findOne({where: {user: user}, order: {time: "DESC"}});
+    const furoTime = furoUser?.time
+
+    const furoTransaction = furoRepository?.create({
+      time: new Date(),
+      user: user,
+    });
+    furoRepository?.save(<Furo>furoTransaction);
+
+    if (!furoTime) {
+      await general.send(
+        this.getNameFromID(userId) +
+        "は初めてお風呂に入りました"
+      );
+      return {state: Furo_Result.SUCCESS_FIRST_TIME}
+    } else {
+      const aap = this.calcAAPoint((new Date().getTime()) - (new Date(furoTime).getTime()))
+      if (aap !== 0) {
+        await giveAAPoint(userId, aap)
+      }
+
+      await general.send(
+        this.getNameFromID(userId) +
+        "は" +
+        getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
+        + "ぶりにお風呂に入りました\n"
+        + `${aap}ああP付与されました`
+      );
+
+      return {state: Furo_Result.SUCCESS, point: aap, time: (new Date().getTime()) - (new Date(furoTime).getTime())}
+    }
+  }
+
 
   async connectDB() {
     this.connection = await createConnection(options);
@@ -217,3 +255,8 @@ export class FuroHaittakaBot extends AppBase {
 
 }
 
+export enum Furo_Result {
+  SUCCESS,
+  SUCCESS_FIRST_TIME,
+  UNKNOWN_ERROR
+}

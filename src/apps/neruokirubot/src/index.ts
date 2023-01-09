@@ -46,7 +46,6 @@ export class NeruOkiruBot extends AppBase {
     // コネクションする
     this.connectDB();
     this.OGP = new OGPManager();
-    this.OGP.init();
   }
 
   override async onBotReady(arg: Client<true>) {
