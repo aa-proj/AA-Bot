@@ -3,6 +3,7 @@ import {NeruOkiruBot} from "./apps/neruokirubot/src";
 import {AppBase, CommandType} from "./apps/appBase";
 import {FuroHaittakaBot} from "./apps/furohaittakabot/src/main";
 import {VCName} from "./apps/vcname/main";
+import express from "express";
 
 export const SERVER_ID = "606109479003750440"
 
@@ -28,6 +29,17 @@ apps.push(new NeruOkiruBot(client))
 apps.push(new FuroHaittakaBot(client))
 apps.push(new VCName(client))
 
+const apiApp = express()
+apps.forEach(app => {
+  if(app.apiRouter) {
+    apiApp.use(app.apiRoot, app.apiRouter)
+    console.log(`registered api endpoint ${app.apiRoot} to ${app.appName}`)
+  }
+})
+
+apiApp.listen(4000, () => {
+  console.log("api server listen on 4000.")
+})
 
 client.on("ready", async (args) => {
 

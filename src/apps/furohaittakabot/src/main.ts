@@ -12,6 +12,7 @@ import {User} from "./eneity/User";
 import {Furo} from "./eneity/furo";
 import {getTimeFromMills, giveAAPoint} from "./util";
 import {AppBase} from "../../appBase";
+import express from "express";
 
 
 // const bathReaction = "<:nyuyoku:885703314417807420>";
@@ -62,6 +63,12 @@ export class FuroHaittakaBot extends AppBase {
         ]
       },
     ]
+
+    this.apiRoot = "/furo"
+    this.apiRouter = express.Router()
+    this.apiRouter.get("/", (req, res) => {
+      res.send("ok")
+    })
 
     this.connectDB()
   }

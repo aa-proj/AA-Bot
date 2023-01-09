@@ -1,4 +1,5 @@
 import {CacheType, Client, Interaction, Message, VoiceState} from "discord.js";
+import {Router} from "express";
 
 export type CommandType = {
   name: string
@@ -8,6 +9,8 @@ export type CommandType = {
 
 export class AppBase {
   appName: string = "unnamed"
+  apiRoot: string = "unnamed"
+  apiRouter: Router | null = null
   commands: CommandType[] = []
   client: Client
 
