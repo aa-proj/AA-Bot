@@ -217,7 +217,7 @@ export class NeruOkiruBot extends AppBase {
 
       const uuid = await this.OGP.generateOGP({
         date: new Date(),
-        icon: (discordUser.avatarURL() || "https://cdn.discordapp.com/avatars/803309031560708167/f160e91772bc096338fd55962a207a52.webp"),
+        icon: (discordUser.displayAvatarURL() || "https://cdn.discordapp.com/avatars/803309031560708167/f160e91772bc096338fd55962a207a52.webp"),
         name: discordUser.nickname || discordUser.displayName,
         time: getHoursFromMills(date - (user.sleepTempTime || 0)),
         sum: getHoursFromMills(sum || 0),
