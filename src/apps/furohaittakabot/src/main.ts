@@ -86,6 +86,12 @@ export class FuroHaittakaBot extends AppBase {
       }
     })
 
+    this.apiRouter.post('/admin/:id/furo/:time', async (req, res) => {
+      console.log(req.params.id)
+      await this.doFuroSilent(req.params.id, new Date(Number(req.params.time)))
+      res.send("ok")
+    })
+
     this.connectDB()
   }
 
@@ -157,6 +163,22 @@ export class FuroHaittakaBot extends AppBase {
     }
     const furoData = await furoRepository?.find({where: {user: user}, order: {time: "DESC"}});
     return furoData || []
+  }
+
+  async doFuroSilent(userId: string, date: Date) {
+    const userRepository = this.connection?.getRepository(User);
+    const furoRepository = this.connection?.getRepository(Furo);
+    let user = await userRepository?.findOne({discordId: userId});
+    if (!user) {
+      console.log("user inai")
+      return
+    }
+    const furoTransaction = furoRepository?.create({
+      time: date,
+      user: user,
+    });
+    furoRepository?.save(<Furo>furoTransaction);
+    console.log("save ok")
   }
 
 
