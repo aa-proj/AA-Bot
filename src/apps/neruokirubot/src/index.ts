@@ -166,18 +166,23 @@ export class NeruOkiruBot extends AppBase {
 
   }
 
-  async getUserNeruData(userId: string): Promise<Sleep[]> {
+  async getUserNeruData(userId: string): Promise<{sleeps: Sleep[], nowSleeping: boolean}> {
     const userRepository = this.connection?.getRepository(User);
     const sleepRepository = this.connection?.getRepository(Sleep);
     const user = await userRepository?.findOne({discordId: userId});
     const sleeps = (await sleepRepository?.find({where: {user}}))?.filter(n => (n?.wakeTime || 0) - (n?.sleepTime || 0) >= 10 * 60 * 1000);
 
     if (!user || !sleeps) {
-      return []
+      return {
+        sleeps: [],
+        nowSleeping: false
+      }
     }
 
-    return sleeps
-
+    return {
+      sleeps,
+      nowSleeping: user.nowSleeping
+    }
   }
 
   async doOkiru(userId: string) {
