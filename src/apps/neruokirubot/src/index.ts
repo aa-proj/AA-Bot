@@ -9,6 +9,8 @@ import {Sleep} from "./entity/Sleep";
 import {getHoursFromMills, getTimeFromMills, giveAAPoint} from "./util";
 import {OGPManager} from "./ogp";
 import {AppBase} from "../../appBase";
+import express from "express";
+import {Furo_Result} from "../../furohaittakabot/src/main";
 
 
 // TypeORMのオプション
@@ -46,6 +48,36 @@ export class NeruOkiruBot extends AppBase {
     // コネクションする
     this.connectDB();
     this.OGP = new OGPManager();
+
+    this.apiRoot = "/sleep"
+    this.apiRouter = express.Router()
+    this.apiRouter.get("/", (req, res) => {
+      res.send("neruokiru ok")
+    })
+
+    this.apiRouter.get("/user/:id", async (req, res) => {
+      const data = await this.getUserNeruData(req.params.id)
+      res.json(data)
+    })
+
+    this.apiRouter.post("/user/:id/okiru", async (req, res) => {
+      try {
+        await this.doOkiru(req.params.id)
+        res.json({success: true})
+      } catch {
+        res.status(500).json({success: false})
+      }
+    })
+
+
+    this.apiRouter.post("/user/:id/neru", async (req, res) => {
+      try {
+        await this.doNeru(req.params.id)
+        res.json({success: true})
+      } catch {
+        res.status(500).json({success: false})
+      }
+    })
   }
 
   override async onBotReady(arg: Client<true>) {
@@ -84,131 +116,125 @@ export class NeruOkiruBot extends AppBase {
     if (!interaction.isButton() || !interaction.guildId) {
       return;
     }
-    const g = this.client.guilds.cache.get(interaction.guildId);
-    const general: TextChannel = <TextChannel>await g?.channels.fetch(generalChannel);
-    const messageUser = interaction.user;
-    const messageUserId = interaction.user.id;
-    const command = interaction.customId;
-    if (messageUser.bot) return;
 
+    if (interaction.user.bot) return;
+
+    const command = interaction.customId;
+
+    switch (command) {
+      case "Neru":
+        await this.doNeru(interaction.user.id)
+        await interaction.reply({content: "OK", ephemeral: true});
+        break;
+      case "Okiru":
+        await this.doOkiru(interaction.user.id)
+        await interaction.reply({content: "OK", ephemeral: true});
+        break;
+    }
+  }
+
+  async doNeru(userId: string) {
+    const userRepository = this.connection?.getRepository(User);
+    const user = await userRepository?.findOne({discordId: userId});
+    const g = await this.client.guilds.fetch(guildID);
+    const general: TextChannel = <TextChannel>await g?.channels.fetch(generalChannel);
+    const discordUser = await g.members.fetch(userId)
+    await discordUser.roles.remove(neruRole);
+    await discordUser.roles.add(okiruRole);
+    if (!user) {
+      // Userが未登録だった時
+      const newUser = userRepository?.create({
+        discordId: userId
+      });
+      await userRepository?.save(<User>newUser);
+    } else if (user.nowSleeping) {
+      await this.doOkiru(userId)
+    }
+
+    await userRepository?.update(
+      {discordId: userId},
+      {
+        nowSleeping: true,
+        sleepTempTime: new Date().getTime()
+      }
+    );
+    await discordUser.roles.remove(okiruRole);
+    await discordUser.roles.add(neruRole);
+    await general.send(
+      this.getNameFromID(userId) + "はねました。ぽやしみ"
+    );
+
+  }
+
+  async getUserNeruData(userId: string): Promise<Sleep[]> {
     const userRepository = this.connection?.getRepository(User);
     const sleepRepository = this.connection?.getRepository(Sleep);
-    const user = await userRepository?.findOne({discordId: interaction.user.id});
+    const user = await userRepository?.findOne({discordId: userId});
+    const sleeps = (await sleepRepository?.find({where: {user}}))?.filter(n => (n?.wakeTime || 0) - (n?.sleepTime || 0) >= 10 * 60 * 1000);
+
+    if (!user || !sleeps) {
+      return []
+    }
+
+    return sleeps
+
+  }
+
+  async doOkiru(userId: string) {
+    const userRepository = this.connection?.getRepository(User);
+    const sleepRepository = this.connection?.getRepository(Sleep);
+    const user = await userRepository?.findOne({discordId: userId});
+    const g = await this.client.guilds.fetch(guildID);
+    const general: TextChannel = <TextChannel>await g?.channels.fetch(generalChannel);
+    const discordUser = await g.members.fetch(userId)
+    await discordUser.roles.remove(neruRole);
+    await discordUser.roles.add(okiruRole);
 
     if (!user) {
       // Userが未登録だった時
       const newUser = userRepository?.create({
-        discordId: messageUserId
+        discordId: userId
       });
       await userRepository?.save(<User>newUser);
-    } else {
-      switch (command) {
-        case "Neru":
-          if (user.nowSleeping) {
-            const date = new Date().getTime();
-            const sleep = sleepRepository?.create({
-              sleepTime: user.sleepTempTime,
-              wakeTime: date,
-              user: user
-            });
-            sleepRepository?.save(<Sleep>sleep);
-            // ポイントの付与
-            const aap = this.calcAAPoint(date - (user.sleepTempTime || 0));
-            if (aap !== 0) {
-              await giveAAPoint(messageUserId, aap);
-            }
-
-            const sleeps = (await sleepRepository?.find({where: {user}}))?.filter(n => (n?.wakeTime || 0) - (n?.sleepTime || 0) >= 10 * 60 * 1000);
-            const sum = sleeps?.reduce((p, n) => {
-              return ((n?.wakeTime || 0) - (n?.sleepTime || 0)) + p;
-            }, 0);
-
-            const uuid = await this.OGP.generateOGP({
-              date: new Date(),
-              icon: (interaction.user.avatarURL() || "https://cdn.discordapp.com/avatars/803309031560708167/f160e91772bc096338fd55962a207a52.webp"),
-              name: interaction.user.username,
-              time: getHoursFromMills(date - (user.sleepTempTime || 0)),
-              sum: getHoursFromMills(sum || 0),
-              average: getHoursFromMills(sum ? sum / (sleeps?.length || 1) : 0),
-              point: aap,
-              start: (user.sleepTempTime || 0),
-              end: date
-            });
-
-            await general.send(
-              `https://sleep.ahoaho.jp/image/${uuid}.png`
-            );
-
-            userRepository?.update(
-              {discordId: messageUserId},
-              {nowSleeping: false}
-            );
-          }
-          await userRepository?.update(
-            {discordId: messageUserId},
-            {
-              nowSleeping: true,
-              sleepTempTime: new Date().getTime()
-            }
-          );
-          g?.members.cache.get(messageUserId)?.roles.remove(okiruRole);
-          g?.members.cache.get(messageUserId)?.roles.add(neruRole);
-          await general.send(
-            this.getNameFromID(messageUserId) + "はねました。ぽやしみ"
-          );
-          await interaction.reply({content: "OK", ephemeral: true});
-          break;
-        case "Okiru":
-          g?.members.cache.get(messageUserId)?.roles.remove(neruRole);
-          g?.members.cache.get(messageUserId)?.roles.add(okiruRole);
-          if (user.nowSleeping) {
-            const date = new Date().getTime();
-            const sleep = sleepRepository?.create({
-              sleepTime: user.sleepTempTime,
-              wakeTime: date,
-              user: user
-            });
-            sleepRepository?.save(<Sleep>sleep);
-            // ポイントの付与
-            const aap = this.calcAAPoint(date - (user.sleepTempTime || 0));
-            if (aap !== 0) {
-              await giveAAPoint(messageUserId, aap);
-            }
-
-            const sleeps = (await sleepRepository?.find({where: {user}}))?.filter(n => (n?.wakeTime || 0) - (n?.sleepTime || 0) >= 10 * 60 * 1000);
-            const sum = sleeps?.reduce((p, n) => {
-              return ((n?.wakeTime || 0) - (n?.sleepTime || 0)) + p;
-            }, 0);
-
-            const uuid = await this.OGP.generateOGP({
-              date: new Date(),
-              icon: (interaction.user.avatarURL() || "https://cdn.discordapp.com/avatars/803309031560708167/f160e91772bc096338fd55962a207a52.webp"),
-              name: interaction.user.username,
-              time: getHoursFromMills(date - (user.sleepTempTime || 0)),
-              sum: getHoursFromMills(sum || 0),
-              average: getHoursFromMills(sum ? sum / (sleeps?.length || 1) : 0),
-              point: aap,
-              start: (user.sleepTempTime || 0),
-              end: date
-            });
-
-            await general.send(
-              `https://sleep.ahoaho.jp/image/${uuid}.png`
-            );
-
-            userRepository?.update(
-              {discordId: messageUserId},
-              {nowSleeping: false}
-            );
-          }
-          await interaction.reply({content: "OK", ephemeral: true});
-          break;
+    } else if (user.nowSleeping) {
+      const date = new Date().getTime();
+      const sleep = sleepRepository?.create({
+        sleepTime: user.sleepTempTime,
+        wakeTime: date,
+        user: user
+      });
+      sleepRepository?.save(<Sleep>sleep);
+      // ポイントの付与
+      const aap = this.calcAAPoint(date - (user.sleepTempTime || 0));
+      if (aap !== 0) {
+        await giveAAPoint(userId, aap);
       }
-    }
-    try {
 
-    } catch (e) {
-      console.error("interaction failed");
+      const sleeps = (await sleepRepository?.find({where: {user}}))?.filter(n => (n?.wakeTime || 0) - (n?.sleepTime || 0) >= 10 * 60 * 1000);
+      const sum = sleeps?.reduce((p, n) => {
+        return ((n?.wakeTime || 0) - (n?.sleepTime || 0)) + p;
+      }, 0);
+
+      const uuid = await this.OGP.generateOGP({
+        date: new Date(),
+        icon: (discordUser.avatarURL() || "https://cdn.discordapp.com/avatars/803309031560708167/f160e91772bc096338fd55962a207a52.webp"),
+        name: discordUser.nickname || discordUser.displayName,
+        time: getHoursFromMills(date - (user.sleepTempTime || 0)),
+        sum: getHoursFromMills(sum || 0),
+        average: getHoursFromMills(sum ? sum / (sleeps?.length || 1) : 0),
+        point: aap,
+        start: (user.sleepTempTime || 0),
+        end: date
+      });
+
+      await general.send(
+        `https://sleep.ahoaho.jp/image/${uuid}.png`
+      );
+
+      userRepository?.update(
+        {discordId: userId},
+        {nowSleeping: false}
+      );
     }
   }
 
