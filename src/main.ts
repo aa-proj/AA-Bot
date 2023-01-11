@@ -4,6 +4,7 @@ import {AppBase, CommandType} from "./apps/appBase";
 import {FuroHaittakaBot} from "./apps/furohaittakabot/src/main";
 import {VCName} from "./apps/vcname/main";
 import express from "express";
+import cors from "cors"
 
 export const SERVER_ID = "606109479003750440"
 
@@ -30,6 +31,7 @@ apps.push(new FuroHaittakaBot(client))
 apps.push(new VCName(client))
 
 const apiApp = express()
+apiApp.use(cors())
 apps.forEach(app => {
   if(app.apiRouter) {
     apiApp.use(app.apiRoot, app.apiRouter)
