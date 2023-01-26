@@ -47,8 +47,6 @@ export class NeruOkiruBot extends AppBase {
     super(client);
     this.appName = "NeruOkiruBot"
 
-    // コネクションする
-    this.connectDB();
     this.OGP = new OGPManager();
 
 
@@ -87,6 +85,8 @@ export class NeruOkiruBot extends AppBase {
       }
     })
 
+    // コネクションする
+    this.connectDB();
     /** ここまで */
   }
 
@@ -357,8 +357,6 @@ export class NeruOkiruBot extends AppBase {
   // データベースつなぐ
   async connectDB() {
     this.connection = await createConnection(options);
-    const userRepository = this.connection.getRepository(User);
-    this.log(await userRepository.count());
     await this.connection.query("PRAGMA foreign_keys=OFF");
     await this.connection.synchronize();
     await this.connection.query("PRAGMA foreign_keys=ON");
