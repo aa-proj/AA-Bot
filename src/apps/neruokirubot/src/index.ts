@@ -346,7 +346,11 @@ export class NeruOkiruBot extends AppBase {
     if (0 <= hour && hour < 5) {
       return 0;
     } else if (5 <= hour && hour < 13) {
-      return 12;
+        if (6 <= new Date().getHours() && new Date().getHours() <= 8){
+        return 20;
+        } else {
+        return 12;
+        }
     } else if (13 <= hour && hour < 18) {
       return 8;
     } else {
