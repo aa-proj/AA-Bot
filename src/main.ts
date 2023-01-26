@@ -6,10 +6,15 @@ import {VCName} from "./apps/vcname/main";
 import express from "express";
 import cors from "cors"
 
+/**
+ * main.ts
+ * AA-Botのコア
+ * アプリを読み込んで、一つのBotで複数のアプリを動かせるようにまとめている部分
+ */
+
 export const SERVER_ID = "606109479003750440"
 
 if (!process.env.DISCORD_TOKEN) throw new Error("DISCORD_TOKEN NOT PROVIDED")
-
 
 const client = new Client(
   {
