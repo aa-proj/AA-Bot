@@ -97,7 +97,7 @@ export class NeruOkiruBot extends AppBase {
       return;
     }
     // 引数をパース
-    const args = msg.content.replace(/　+/g, " ").slice(4).split(/ +/) //.trim().split(/ /);
+    const args = msg.content.replace(/　+/g, " ").slice(len).split(/ +/) //.trim().split(/ /);
     switch (args[0]) {
       case "init":
         await this.initBotMessage();
