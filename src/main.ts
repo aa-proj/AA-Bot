@@ -1,4 +1,4 @@
-import {Client, IntentsBitField, REST, Routes} from "discord.js";
+import {Client, IntentsBitField, Interaction, REST, Routes} from "discord.js";
 import {NeruOkiruBot} from "./apps/neruokirubot/src";
 import {AppBase, CommandType} from "./apps/appBase";
 import {FuroHaittakaBot} from "./apps/furohaittakabot/src/main";
@@ -52,7 +52,10 @@ client.on("ready", async (args) => {
 
     await rest.put(
       Routes.applicationGuildCommands(args.user.id, SERVER_ID),
-      {body: commands},
+      {body: commands.map(r => {
+          r.name = (process.env.CMD_PREFIX || "")  + r.name;
+          return r
+        })},
     );
 
     console.log('Successfully reloaded application (/) commands.');
@@ -73,6 +76,11 @@ client.on("messageCreate", async (msg) => {
 
 
 client.on("interactionCreate", async (interaction) => {
+  // デバッグ用の環境変数が設定されていた時にcommandを前処理
+  if (process.env.CMD_PREFIX && interaction.isChatInputCommand()) {
+    interaction.commandName = interaction.commandName.replace(process.env.CMD_PREFIX, "")
+  }
+
   for (const app of apps) {
     await app.onInteractionCreate(interaction)
   }
