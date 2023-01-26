@@ -101,9 +101,19 @@ export class FuroHaittakaBot extends AppBase {
 
   override async onMessageCreate(msg: Message) {
     if (msg.author.bot) return;
-    if (!msg.content.startsWith("/bath")) return;
+    let len = 5
+
+    if(process.env.CMD_PREFIX) {
+      if (!msg.content.startsWith(`/${process.env.CMD_PREFIX}bath`)) {
+        return;
+      }
+      len = `/${process.env.CMD_PREFIX}bath`.length
+    }
+    else if (!msg.content.startsWith("/bath")) {
+      return;
+    }
     // 引数をパース
-    const args = msg.content.replace(/　+/g, " ").slice(5).trim().split(/ + /);
+    const args = msg.content.replace(/　+/g, " ").slice(len).trim().split(/ + /);
     switch (args[0]) {
       case "init":
         await this.initBotMessage(msg);

@@ -86,7 +86,16 @@ export class NeruOkiruBot extends AppBase {
 
   override async onMessageCreate(msg: Message) {
     if (msg.author.bot) return;
-    if (!msg.content.startsWith(process.env.COMMAND_PREFIX || "/no")) return;
+    let len = 3
+    if(process.env.CMD_PREFIX) {
+      if (!msg.content.startsWith(`/${process.env.CMD_PREFIX}no`)) {
+        return;
+      }
+      len = `/${process.env.CMD_PREFIX}no`.length
+    }
+    else if (!msg.content.startsWith("/no")) {
+      return;
+    }
     // 引数をパース
     const args = msg.content.replace(/　+/g, " ").slice(4).split(/ +/) //.trim().split(/ /);
     switch (args[0]) {
