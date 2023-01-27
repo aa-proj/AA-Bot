@@ -103,13 +103,12 @@ export class FuroHaittakaBot extends AppBase {
     if (msg.author.bot) return;
     let len = 5
 
-    if(process.env.CMD_PREFIX) {
+    if (process.env.CMD_PREFIX) {
       if (!msg.content.startsWith(`/${process.env.CMD_PREFIX}bath`)) {
         return;
       }
       len = `/${process.env.CMD_PREFIX}bath`.length
-    }
-    else if (!msg.content.startsWith("/bath")) {
+    } else if (!msg.content.startsWith("/bath")) {
       return;
     }
     // 引数をパース
@@ -155,9 +154,9 @@ export class FuroHaittakaBot extends AppBase {
           return
         }
         await interaction.reply(
-          this.getNameFromID(userId) + "は" +
-          getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
-          + "風呂に入っていません\n ああPが貰えなくなるまで残り" + getTimeFromMills(((new Date(furoTime).getTime() + 35 * 60 * 60 * 1000) - new Date().getTime()))
+            this.getNameFromID(userId) + "は" +
+            getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
+            + "風呂に入っていません\n ああPが貰えなくなるまで残り" + getTimeFromMills(((new Date(furoTime).getTime() + 35 * 60 * 60 * 1000) - new Date().getTime()))
         )
         return
       }
@@ -218,8 +217,8 @@ export class FuroHaittakaBot extends AppBase {
 
     if (!furoTime) {
       await general.send(
-        this.getNameFromID(userId) +
-        "は初めてお風呂に入りました"
+          this.getNameFromID(userId) +
+          "は初めてお風呂に入りました"
       );
       return {state: Furo_Result.SUCCESS_FIRST_TIME}
     } else {
@@ -229,11 +228,11 @@ export class FuroHaittakaBot extends AppBase {
       }
 
       await general.send(
-        this.getNameFromID(userId) +
-        "は" +
-        getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
-        + "ぶりにお風呂に入りました\n"
-        + `${aap}ああP付与されました`
+          this.getNameFromID(userId) +
+          "は" +
+          getTimeFromMills((new Date().getTime()) - (new Date(furoTime).getTime()))
+          + "ぶりにお風呂に入りました\n"
+          + `${aap}ああP付与されました`
       );
 
       return {state: Furo_Result.SUCCESS, point: aap, time: (new Date().getTime()) - (new Date(furoTime).getTime())}
@@ -253,14 +252,14 @@ export class FuroHaittakaBot extends AppBase {
 
     const channel: TextChannel = (await this.client.channels.fetch(dailyBotChannel)) as TextChannel;
     const action = new ActionRowBuilder()
-      .addComponents([
-          new ButtonBuilder()
-            .setCustomId("Furo")
-            .setLabel("風呂")
-            .setStyle(ButtonStyle.Success)
-            .setEmoji(bathReactionId)
-        ]
-      );
+        .addComponents([
+              new ButtonBuilder()
+                  .setCustomId("Furo")
+                  .setLabel("風呂")
+                  .setStyle(ButtonStyle.Success)
+                  .setEmoji(bathReactionId)
+            ]
+        );
     // @ts-ignore
     await channel.send({content: "お風呂に入ったらリアクションしてください", components: [action]});
   }
@@ -286,10 +285,10 @@ export class FuroHaittakaBot extends AppBase {
       }
     } else {
       return 0
-      }
-
     }
 
+  }
+}
 
 export enum Furo_Result {
   SUCCESS,
