@@ -279,13 +279,17 @@ export class FuroHaittakaBot extends AppBase {
     } else if (6 <= hour && hour < 18) {
       return 8
     } else if (18 <= hour && hour < 36) {
-      return 12
+      if (24 == hour) {
+        return 16
+      } else {
+        return 12
+      }
     } else {
       return 0
-    }
-  }
+      }
 
-}
+    }
+
 
 export enum Furo_Result {
   SUCCESS,
