@@ -10,6 +10,7 @@ import {getHoursFromMills, getTimeFromMills, giveAAPoint} from "./util";
 import {OGPManager} from "./ogp";
 import {AppBase} from "../../appBase";
 import express from "express";
+import {GUILD_ID} from "../../../main";
 
 
 // TypeORMのオプション
@@ -32,8 +33,6 @@ const okiruRole = "885403912713158686";
 
 const noChannel = "803321643803213834";
 const generalChannel = "606109479003750442";
-
-const guildID = "606109479003750440";
 
 export class NeruOkiruBot extends AppBase {
   OGP: OGPManager
@@ -178,7 +177,7 @@ export class NeruOkiruBot extends AppBase {
     // DBに入ってるuserをuserIdで取り出す(新規の時はなんも入らん)
     const user = await userRepository?.findOne({discordId: userId});
 
-    const g = await this.client.guilds.fetch(guildID);
+    const g = await this.client.guilds.fetch(GUILD_ID);
     const general: TextChannel = <TextChannel>await g?.channels.fetch(generalChannel);
     const discordUser = await g.members.fetch(userId)
 
@@ -241,7 +240,7 @@ export class NeruOkiruBot extends AppBase {
     const userRepository = this.connection?.getRepository(User);
     const sleepRepository = this.connection?.getRepository(Sleep);
     const user = await userRepository?.findOne({discordId: userId});
-    const g = await this.client.guilds.fetch(guildID);
+    const g = await this.client.guilds.fetch(GUILD_ID);
     const general: TextChannel = <TextChannel>await g?.channels.fetch(generalChannel);
     const discordUser = await g.members.fetch(userId)
 
@@ -334,7 +333,7 @@ export class NeruOkiruBot extends AppBase {
 
   // IDから名前取るメソッド
   getNameFromID(id: string) {
-    let g = this.client.guilds.cache.get(guildID);
+    let g = this.client.guilds.cache.get(GUILD_ID);
     let nickName = g?.members.cache.get(id)?.nickname?.replace("@", "＠");
     if (!nickName) nickName = g?.members.cache.get(id)?.displayName;
     return nickName;
