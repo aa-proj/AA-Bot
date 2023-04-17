@@ -6,11 +6,12 @@ import {
 import {Connection, ConnectionOptions, createConnection} from "typeorm";
 import {User} from "./entity/User";
 import {Sleep} from "./entity/Sleep";
-import {getHoursFromMills, getTimeFromMills, giveAAPoint} from "./util";
+import {getHoursFromMills, getTimeFromMills} from "./util";
 import {OGPManager} from "./ogp";
 import {AppBase} from "../../appBase";
 import express from "express";
 import {GUILD_ID} from "../../../main";
+import {giveAAPoint} from "../../../lib/aabank";
 
 
 // TypeORMのオプション

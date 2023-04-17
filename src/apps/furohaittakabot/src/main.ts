@@ -10,10 +10,11 @@ import {
 import {Connection, ConnectionOptions, createConnection} from "typeorm";
 import {User} from "./eneity/User";
 import {Furo} from "./eneity/furo";
-import {getTimeFromMills, giveAAPoint} from "./util";
+import {getTimeFromMills} from "./util";
 import {AppBase} from "../../appBase";
 import express from "express";
 import {GUILD_ID} from "../../../main";
+import {giveAAPoint} from "../../../lib/aabank";
 
 
 // const bathReaction = "<:nyuyoku:885703314417807420>";
