@@ -1,5 +1,6 @@
 import {AppBase} from "../appBase";
 import {CacheType, Client, GuildMember, Interaction, VoiceState} from "discord.js";
+import {GUILD_ID} from "../../main";
 
 
 export class NickName extends AppBase {
@@ -43,7 +44,7 @@ export class NickName extends AppBase {
           await interaction.reply({content: "エラーが発生しました。", ephemeral: true})
           return
         }
-        const guild = await this.client.guilds.fetch("606109479003750440");
+        const guild = await this.client.guilds.fetch(GUILD_ID);
 
         if(!targetUser){
           await interaction.reply({content: "エラーが発生しました。", ephemeral: true})
