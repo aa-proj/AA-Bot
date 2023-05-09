@@ -6,13 +6,15 @@ import {VCName} from "./apps/vcname/main";
 import express from "express";
 import cors from "cors"
 
+export const GUILD_ID = "606109479003750440"
+
+
 /**
  * main.ts
  * AA-Botのコア
  * アプリを読み込んで、一つのBotで複数のアプリを動かせるようにまとめている部分
  */
 
-export const SERVER_ID = "606109479003750440"
 
 if (!process.env.DISCORD_TOKEN) throw new Error("DISCORD_TOKEN NOT PROVIDED")
 
@@ -56,7 +58,7 @@ client.on("ready", async (args) => {
     const commands = apps.reduce<CommandType[]>((p, n) => {return [...p, ...n.commands]}, [])
 
     await rest.put(
-      Routes.applicationGuildCommands(args.user.id, SERVER_ID),
+      Routes.applicationGuildCommands(args.user.id, GUILD_ID),
       {body: commands.map(r => {
           r.name = (process.env.CMD_PREFIX || "")  + r.name;
           return r

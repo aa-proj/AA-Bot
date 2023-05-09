@@ -10,16 +10,17 @@ import {
 import {Connection, ConnectionOptions, createConnection} from "typeorm";
 import {User} from "./eneity/User";
 import {Furo} from "./eneity/furo";
-import {getTimeFromMills, giveAAPoint} from "./util";
+import {getTimeFromMills} from "./util";
 import {AppBase} from "../../appBase";
 import express from "express";
+import {GUILD_ID} from "../../../main";
+import {giveAAPoint} from "../../../lib/aabank";
 
 
 // const bathReaction = "<:nyuyoku:885703314417807420>";
 const bathReactionId = "885703314417807420"
 const dailyBotChannel = "803321643803213834";
 const generalChannel = "606109479003750442";
-const guildID = "606109479003750440";
 
 
 // TypeORMのオプション
@@ -194,7 +195,7 @@ export class FuroHaittakaBot extends AppBase {
   async doFuro(userId: string): Promise<{ state: Furo_Result, point?: number, time?: number }> {
     const userRepository = this.connection?.getRepository(User);
     const furoRepository = this.connection?.getRepository(Furo);
-    const g = await this.client.guilds.fetch(guildID);
+    const g = await this.client.guilds.fetch(GUILD_ID);
     const general: TextChannel = <TextChannel>await g.channels.fetch(generalChannel);
     let user = await userRepository?.findOne({discordId: userId});
     if (!user) {
@@ -265,7 +266,7 @@ export class FuroHaittakaBot extends AppBase {
   }
 
   getNameFromID(id: string) {
-    let g = this.client.guilds.cache.get(guildID);
+    let g = this.client.guilds.cache.get(GUILD_ID);
     let nickName = g?.members.cache.get(id)?.nickname?.replace("@", "＠");
     if (!nickName) nickName = g?.members.cache.get(id)?.displayName;
     return nickName;
