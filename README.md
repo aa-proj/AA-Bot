@@ -1,7 +1,7 @@
 # AA-Bot
 
 ## 環境構築
-Node 16以降
+Node 16以降16.20.0
 
 ```shell
 git clone https://github.com/aa-proj/AA-Bot/
