@@ -135,8 +135,9 @@ export class FuroHaittakaBot extends AppBase {
 
       switch (command) {
         case "Furo":
+          const i = await interaction.deferReply({ephemeral: true})
           await this.doFuro(messageUserId)
-          await interaction.reply({content: "OK", ephemeral: true});
+          await i.edit({content: "OK"});
           break;
       }
     }

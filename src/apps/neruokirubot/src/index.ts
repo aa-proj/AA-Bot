@@ -160,12 +160,14 @@ export class NeruOkiruBot extends AppBase {
     // コマンドで分岐
     switch (command) {
       case "Neru":
+        const i = await interaction.deferReply({ephemeral: true});
         await this.doNeru(interaction.user.id)
-        await interaction.reply({content: "OK", ephemeral: true});
+        await i.edit({content: "OK"});
         break;
       case "Okiru":
+        const ii = await interaction.deferReply({ephemeral: true});
         await this.doOkiru(interaction.user.id)
-        await interaction.reply({content: "OK", ephemeral: true});
+        await ii.edit({content: "OK"});
         break;
     }
   }
